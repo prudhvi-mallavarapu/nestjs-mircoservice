@@ -15,7 +15,8 @@ async function bootstrap() {
   app.enableCors();
 
   await app.startAllMicroservices();
-  await app.listen(3001);
-  console.log('Product service HTTP :3001, TCP :4001');
+  const port = process.env.PORT ?? 3001;
+  await app.listen(port);
+  console.log(`Product service HTTP :${port}, TCP :4001`);
 }
 bootstrap();

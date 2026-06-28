@@ -6,7 +6,8 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
   app.enableCors();
-  await app.listen(3002);
-  console.log('Order service HTTP :3002');
+  const port = process.env.PORT ?? 3002;
+  await app.listen(port);
+  console.log(`Order service HTTP :${port}`);
 }
 bootstrap();
