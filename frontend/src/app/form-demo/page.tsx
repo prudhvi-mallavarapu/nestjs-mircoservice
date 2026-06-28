@@ -19,9 +19,10 @@ function buildDefaults(fields: FieldConfig[]): Record<string, string> {
 function validateConfig(parsed: unknown): string | null {
   if (!Array.isArray(parsed)) return 'Config must be a JSON array';
   for (const item of parsed as Record<string, unknown>[]) {
-    if (!item.id) return 'Each field must have an id';
+    if (item.id == null) return 'Each field must have an id';
     if (!item.name) return 'Each field must have a name';
-    if (!item.fieldType) return 'Each field must have a fieldType (TEXT, LIST, RADIO)';
+    if (!['TEXT', 'LIST', 'RADIO'].includes(item.fieldType as string))
+      return 'fieldType must be TEXT, LIST, or RADIO';
   }
   return null;
 }
@@ -38,8 +39,12 @@ export default function FormDemoPage() {
   });
 
   useEffect(() => {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored) setSubmissions(JSON.parse(stored));
+    try {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      if (stored) setSubmissions(JSON.parse(stored));
+    } catch {
+      // corrupted localStorage — start fresh
+    }
   }, []);
 
   const handleJsonChange = (text: string) => {
@@ -48,9 +53,13 @@ export default function FormDemoPage() {
       const parsed = JSON.parse(text);
       const err = validateConfig(parsed);
       if (err) { setJsonError(err); return; }
-      setConfig(parsed as FieldConfig[]);
+      setConfig((prev) => {
+        const prevIds = prev.map((f) => f.id).join(',');
+        const nextIds = (parsed as FieldConfig[]).map((f) => f.id).join(',');
+        if (prevIds !== nextIds) reset(buildDefaults(parsed as FieldConfig[]));
+        return parsed as FieldConfig[];
+      });
       setJsonError(null);
-      reset(buildDefaults(parsed as FieldConfig[]));
     } catch (e) {
       setJsonError((e as Error).message);
     }
@@ -83,14 +92,13 @@ export default function FormDemoPage() {
               multiline
               minRows={18}
               fullWidth
+              label="JSON Config"
               value={jsonText}
               onChange={(e) => handleJsonChange(e.target.value)}
               error={!!jsonError}
+              helperText={jsonError ?? ' '}
               slotProps={{ htmlInput: { style: { fontFamily: 'monospace', fontSize: 13 } } }}
             />
-            {jsonError && (
-              <Alert severity="error" sx={{ mt: 1 }}>{jsonError}</Alert>
-            )}
           </Paper>
         </Grid>
 
