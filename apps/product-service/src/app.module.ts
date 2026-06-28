@@ -6,7 +6,7 @@ import { ProductModule } from './product/product.module';
 @Module({
   imports: [
     TypeOrmModule.forRoot({
-      type: 'better-sqlite3' as any,
+      type: 'better-sqlite3',
       database: 'products.db',
       entities: [Product],
       synchronize: true,
