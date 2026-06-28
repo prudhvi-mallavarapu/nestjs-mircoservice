@@ -124,6 +124,13 @@ Order service sends to product service over TCP:
 |---------|---------|----------|
 | `get_product` | `{ id: string }` | `Product` or `null` |
 | `validate_stock` | `{ id: string, quantity: number }` | `{ valid: boolean, price: number }` |
+| `decrement_stock` | `{ id: string, quantity: number }` | `{ success: boolean }` |
+
+**Order creation flow:**
+1. For each item, send `validate_stock` → get price + confirm stock available
+2. Create Order + OrderItems with snapshotted `unitPrice`
+3. For each item, send `decrement_stock` → reduce product stock
+4. Return created order
 
 ---
 
