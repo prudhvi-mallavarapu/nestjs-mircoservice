@@ -1,7 +1,6 @@
 import type { Metadata } from 'next';
-import Link from 'next/link';
-import { AppBar, Toolbar, Button, Box } from '@mui/material';
 import { ThemeRegistry } from '@/components/ThemeRegistry';
+import { NavBar } from '@/components/NavBar';
 
 export const metadata: Metadata = {
   title: 'Microservice App',
@@ -13,15 +12,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en">
       <body>
         <ThemeRegistry>
-          <AppBar position="static">
-            <Toolbar>
-              <Box sx={{ display: 'flex', gap: 1 }}>
-                <Button color="inherit" component={Link} href="/">Products</Button>
-                <Button color="inherit" component={Link} href="/orders">Orders</Button>
-                <Button color="inherit" component={Link} href="/form-demo">Form Demo</Button>
-              </Box>
-            </Toolbar>
-          </AppBar>
+          <NavBar />
           {children}
         </ThemeRegistry>
       </body>

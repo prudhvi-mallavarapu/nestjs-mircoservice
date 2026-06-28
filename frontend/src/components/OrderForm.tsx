@@ -1,8 +1,8 @@
 'use client';
-import { useForm, useFieldArray } from 'react-hook-form';
+import { useForm, useFieldArray, Controller } from 'react-hook-form';
 import {
   Box, Button, TextField, Typography, Stack, Alert,
-  IconButton, MenuItem, Select, InputLabel, FormControl,
+  IconButton, MenuItem, Select, InputLabel, FormControl, FormHelperText,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
@@ -50,20 +50,26 @@ export function OrderForm({
       <Stack spacing={2}>
         {fields.map((field, idx) => (
           <Stack key={field.id} direction="row" spacing={1} sx={{ alignItems: 'center' }}>
-            <FormControl sx={{ minWidth: 200 }}>
-              <InputLabel>Product</InputLabel>
-              <Select
-                label="Product"
-                defaultValue=""
-                {...register(`items.${idx}.productId`, { required: true })}
-              >
-                {products.map((p) => (
-                  <MenuItem key={p.id} value={p.id}>
-                    {p.name} (stock: {p.stock})
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
+            <Controller
+              name={`items.${idx}.productId`}
+              control={control}
+              rules={{ required: 'Product required' }}
+              render={({ field: f, fieldState }) => (
+                <FormControl sx={{ minWidth: 200 }} error={!!fieldState.error}>
+                  <InputLabel>Product</InputLabel>
+                  <Select {...f} label="Product">
+                    {products.map((p) => (
+                      <MenuItem key={p.id} value={p.id}>
+                        {p.name} (stock: {p.stock})
+                      </MenuItem>
+                    ))}
+                  </Select>
+                  {fieldState.error && (
+                    <FormHelperText>{fieldState.error.message}</FormHelperText>
+                  )}
+                </FormControl>
+              )}
+            />
             <TextField
               label="Qty"
               type="number"

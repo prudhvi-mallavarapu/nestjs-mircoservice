@@ -1,6 +1,6 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { Container, Typography, Divider, CircularProgress, Box } from '@mui/material';
+import { Container, Typography, Divider, CircularProgress, Box, Alert } from '@mui/material';
 import { OrderForm } from '@/components/OrderForm';
 import { OrderList } from '@/components/OrderList';
 import { api } from '@/lib/api';
@@ -10,6 +10,7 @@ export default function OrdersPage() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const [deleteError, setDeleteError] = useState('');
 
   useEffect(() => {
     Promise.all([api.orders.list(), api.products.list()])
@@ -20,13 +21,19 @@ export default function OrdersPage() {
   const handleCreated = (o: Order) => setOrders((prev) => [o, ...prev]);
 
   const handleDelete = async (id: string) => {
-    await api.orders.remove(id);
-    setOrders((prev) => prev.filter((o) => o.id !== id));
+    setDeleteError('');
+    try {
+      await api.orders.remove(id);
+      setOrders((prev) => prev.filter((o) => o.id !== id));
+    } catch (e: any) {
+      setDeleteError(e.message ?? 'Failed to delete order');
+    }
   };
 
   return (
     <Container maxWidth="md" sx={{ py: 4 }}>
       <Typography variant="h4" gutterBottom>Orders</Typography>
+      {deleteError && <Alert severity="error" sx={{ mb: 2 }}>{deleteError}</Alert>}
       {loading ? (
         <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
           <CircularProgress />

@@ -58,7 +58,7 @@ export default function FormDemoPage() {
               <Paper key={i} sx={{ mb: 1 }}>
                 <ListItem>
                   <ListItemText
-                    primary={formConfig.map((f) => `${f.name}: ${sub[f.id] ?? '—'}`).join(' · ')}
+                    primary={formConfig.map((f) => `${f.name}: ${sub[String(f.id)] ?? '—'}`).join(' · ')}
                   />
                 </ListItem>
               </Paper>

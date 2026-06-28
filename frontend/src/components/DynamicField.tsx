@@ -15,7 +15,6 @@ import {
   Radio,
   FormLabel,
   FormHelperText,
-  Box,
 } from '@mui/material';
 import type { FieldConfig } from '@/types';
 
@@ -89,7 +88,8 @@ export function DynamicField({ field, control }: Props) {
           );
         }
 
-        return <Box />;
+        return <></>;
+
       }}
     />
   );
