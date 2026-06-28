@@ -15,16 +15,16 @@ export class Product {
   name: string;
 
   @Column({ nullable: true })
-  description: string;
+  description?: string;
 
-  @Column('decimal', { precision: 10, scale: 2 })
+  @Column('decimal', { precision: 10, scale: 2 }) // ponytail: better-sqlite3 returns string at runtime, cast with Number()
   price: number;
 
   @Column('int')
   stock: number;
 
   @Column({ nullable: true })
-  category: string;
+  category?: string;
 
   @CreateDateColumn()
   createdAt: Date;

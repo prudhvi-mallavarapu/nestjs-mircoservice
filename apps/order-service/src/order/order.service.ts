@@ -67,7 +67,8 @@ export class OrderService {
   async update(id: string, dto: UpdateOrderDto): Promise<Order> {
     await this.findOne(id);
     await this.orderRepo.update(id, dto);
-    return this.orderRepo.findOne({ where: { id } }) as Promise<Order>;
+    const updated = await this.orderRepo.findOne({ where: { id } });
+    return this.enrichOrder(updated as Order);
   }
 
   async remove(id: string): Promise<void> {

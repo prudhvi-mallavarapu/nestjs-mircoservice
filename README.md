@@ -83,6 +83,15 @@ Open http://localhost:3000.
 pnpm test
 ```
 
+## Known Limitations
+
+This project is a demo/assignment and intentionally omits several production concerns:
+
+- **Partial order failure leaks stock** — during order creation, `reserve_stock` is called for each item in sequence. If a later item fails (insufficient stock), stock already decremented for earlier items in the same order is never restored. There is no basket-level rollback.
+- **Cancelling or deleting an order does not restore stock** — `DELETE /orders/:id` and `PATCH /orders/:id` (status change to `CANCELLED`) do not emit a compensating event to product-service. Reserved stock remains decremented.
+- **`synchronize: true` is development-only** — TypeORM's `synchronize: true` auto-migrates the schema on startup. This must be disabled and replaced with explicit migrations before any production deployment.
+- **CORS is wildcard-open** — `app.enableCors()` with no origin restriction is intentional for local development convenience. Restrict the `origin` option before deploying to a shared environment.
+
 ## Dynamic Form
 
 The signup form at `/form-demo` is driven by `frontend/src/lib/formConfig.ts`.

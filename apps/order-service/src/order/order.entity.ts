@@ -22,7 +22,7 @@ export class Order {
   @Column({ type: 'simple-enum', enum: OrderStatus, default: OrderStatus.CONFIRMED })
   status: OrderStatus;
 
-  @Column('decimal', { precision: 10, scale: 2 })
+  @Column('decimal', { precision: 10, scale: 2 }) // ponytail: better-sqlite3 returns string at runtime, cast with Number()
   totalAmount: number;
 
   @OneToMany(() => OrderItem, (item) => item.order, { cascade: true, eager: true })
