@@ -3,6 +3,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { Order } from './order.entity';
 import { OrderItem } from './order-item.entity';
+import { OrderService } from './order.service';
+import { OrderController } from './order.controller';
 
 @Module({
   imports: [
@@ -15,5 +17,7 @@ import { OrderItem } from './order-item.entity';
       },
     ]),
   ],
+  providers: [OrderService],
+  controllers: [OrderController],
 })
 export class OrderModule {}
