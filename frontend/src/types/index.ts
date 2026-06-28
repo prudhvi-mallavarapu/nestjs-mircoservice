@@ -35,5 +35,5 @@ export interface FieldConfig {
   maxLength?: number;
   defaultValue?: string;
   required: boolean;
-  listOfValues1?: string[];
+  listOfValues?: string[];
 }

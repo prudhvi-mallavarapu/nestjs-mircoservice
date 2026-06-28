@@ -61,7 +61,7 @@ export function DynamicField({ field, control }: Props) {
             <FormControl fullWidth required={field.required} error={!!fieldState.error}>
               <InputLabel>{field.name}</InputLabel>
               <Select {...f} label={field.name}>
-                {field.listOfValues1?.map((opt) => (
+                {field.listOfValues?.map((opt) => (
                   <MenuItem key={opt} value={opt}>{opt}</MenuItem>
                 ))}
               </Select>
@@ -77,7 +77,7 @@ export function DynamicField({ field, control }: Props) {
             <FormControl required={field.required} error={!!fieldState.error}>
               <FormLabel>{field.name}</FormLabel>
               <RadioGroup {...f} row>
-                {field.listOfValues1?.map((opt) => (
+                {field.listOfValues?.map((opt) => (
                   <FormControlLabel key={opt} value={opt} control={<Radio />} label={opt} />
                 ))}
               </RadioGroup>

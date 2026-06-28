@@ -24,8 +24,12 @@ function validateConfig(parsed: unknown): string | null {
     if (!['TEXT', 'LIST', 'RADIO'].includes(item.fieldType as string))
       return 'fieldType must be TEXT, LIST, or RADIO';
     if (['LIST', 'RADIO'].includes(item.fieldType as string) &&
-        (!Array.isArray(item.listOfValues1) || (item.listOfValues1 as unknown[]).length === 0))
-      return `"${item.name}" requires listOfValues1 for ${item.fieldType} type`;
+        (!Array.isArray(item.listOfValues) || (item.listOfValues as unknown[]).length === 0))
+      return `"${item.name}" requires listOfValues for ${item.fieldType} type`;
+    if (['LIST', 'RADIO'].includes(item.fieldType as string) &&
+        item.defaultValue != null &&
+        !(item.listOfValues as string[]).includes(item.defaultValue as string))
+      return `"${item.name}" defaultValue "${item.defaultValue}" is not in listOfValues`;
   }
   return null;
 }
@@ -56,11 +60,12 @@ export default function FormDemoPage() {
       const parsed = JSON.parse(text);
       const err = validateConfig(parsed);
       if (err) { setJsonError(err); return; }
+      const next = parsed as FieldConfig[];
       setConfig((prev) => {
-        const prevIds = prev.map((f) => f.id).join(',');
-        const nextIds = (parsed as FieldConfig[]).map((f) => f.id).join(',');
-        if (prevIds !== nextIds) reset(buildDefaults(parsed as FieldConfig[]));
-        return parsed as FieldConfig[];
+        const sig = (fields: FieldConfig[]) =>
+          fields.map((f) => `${f.id}:${f.fieldType}:${f.defaultValue ?? ''}:${(f.listOfValues ?? []).join(',')}`).join('|');
+        if (sig(prev) !== sig(next)) reset(buildDefaults(next));
+        return next;
       });
       setJsonError(null);
     } catch (e) {
@@ -106,6 +111,7 @@ export default function FormDemoPage() {
                 Reset JSON
               </Button>
             </Box>
+            {jsonError && <Alert severity="error" sx={{ mb: 1 }}>{jsonError}</Alert>}
             <TextField
               multiline
               minRows={18}
@@ -115,7 +121,6 @@ export default function FormDemoPage() {
               value={jsonText}
               onChange={(e) => handleJsonChange(e.target.value)}
               error={!!jsonError}
-              helperText={jsonError ?? ' '}
               slotProps={{ htmlInput: { style: { fontFamily: 'monospace', fontSize: 13 } } }}
             />
           </Paper>

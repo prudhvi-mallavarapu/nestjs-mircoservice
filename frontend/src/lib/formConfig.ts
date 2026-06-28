@@ -25,7 +25,7 @@ export const formConfig: FieldConfig[] = [
     fieldType: 'LIST',
     defaultValue: 'Male',
     required: true,
-    listOfValues1: ['Male', 'Female', 'Others'],
+    listOfValues: ['Male', 'Female', 'Others'],
   },
   {
     id: 7,
@@ -33,6 +33,6 @@ export const formConfig: FieldConfig[] = [
     fieldType: 'RADIO',
     defaultValue: 'Yes',
     required: true,
-    listOfValues1: ['Yes', 'No'],
+    listOfValues: ['Yes', 'No'],
   },
 ];
