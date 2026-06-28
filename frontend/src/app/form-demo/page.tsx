@@ -109,6 +109,7 @@ export default function FormDemoPage() {
             <TextField
               multiline
               minRows={18}
+              maxRows={28}
               fullWidth
               label="JSON Config"
               value={jsonText}
