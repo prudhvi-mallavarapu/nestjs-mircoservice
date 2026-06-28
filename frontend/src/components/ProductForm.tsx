@@ -37,7 +37,7 @@ export function ProductForm({ onCreated, product }: Props) {
       onCreated(result);
       if (!product) reset();
     } catch (e: any) {
-      showToast(e.message, 'error');
+      showToast(e.message ?? 'Something went wrong', 'error');
     }
   };
 

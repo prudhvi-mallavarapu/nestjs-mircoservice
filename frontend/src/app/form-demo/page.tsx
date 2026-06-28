@@ -22,7 +22,7 @@ export default function FormDemoPage() {
   const { submissions, submitted, saveSubmission, clearSubmissions } = useSubmissions();
 
   const onSubmit = (values: Record<string, string>) => {
-    saveSubmission(values);
+    saveSubmission(values, config);
     reset(buildDefaults(config));
   };
 
@@ -90,7 +90,7 @@ export default function FormDemoPage() {
                   <Paper key={i} sx={{ mb: 1 }}>
                     <ListItem>
                       <ListItemText
-                        primary={config.map((f) => `${f.name}: ${sub[String(f.id)] ?? '—'}`).join(' · ')}
+                        primary={sub.map((f) => `${f.label}: ${f.value || '—'}`).join(' · ')}
                       />
                     </ListItem>
                   </Paper>

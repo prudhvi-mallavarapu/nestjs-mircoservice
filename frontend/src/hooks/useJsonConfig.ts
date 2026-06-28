@@ -22,9 +22,9 @@ function validateConfig(parsed: unknown): string | null {
 }
 
 function configSig(fields: FieldConfig[]): string {
-  return fields
-    .map((f) => `${f.id}:${f.fieldType}:${f.defaultValue ?? ''}:${(f.listOfValues ?? []).join(',')}`)
-    .join('|');
+  return JSON.stringify(fields.map((f) => ({
+    id: f.id, fieldType: f.fieldType, defaultValue: f.defaultValue ?? '', listOfValues: f.listOfValues ?? [],
+  })));
 }
 
 export function buildDefaults(fields: FieldConfig[]): Record<string, string> {

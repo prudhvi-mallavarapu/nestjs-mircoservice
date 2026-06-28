@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import {
   Container, Typography, CircularProgress, Box,
   Button, Dialog, DialogTitle, DialogContent, DialogActions, IconButton, Stack, Chip,
@@ -40,7 +40,7 @@ export default function OrdersPage() {
     setOrders((prev) => [o, ...prev]);
     setOpen(false);
     showToast('Order placed');
-    api.products.list().then(setProducts);
+    api.products.list().then(setProducts).catch(() => {});
   };
 
   const handleCancel = async () => {
@@ -56,9 +56,12 @@ export default function OrdersPage() {
     }
   };
 
-  const displayed = (statusFilter === 'ALL' ? orders : orders.filter((o) => o.status === statusFilter))
-    .slice()
-    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  const displayed = useMemo(
+    () => (statusFilter === 'ALL' ? orders : orders.filter((o) => o.status === statusFilter))
+      .slice()
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()),
+    [orders, statusFilter],
+  );
 
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>

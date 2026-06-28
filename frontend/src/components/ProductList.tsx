@@ -16,7 +16,7 @@ interface Props {
 }
 
 const CategoryChip = ({ label }: { label: string }) => (
-  <Chip label={label} size="small" sx={{ borderRadius: 1, fontSize: '0.7rem', height: 20, bgcolor: '#FEF3E2', color: '#E67E22' }} />
+  <Chip label={label} size="small" sx={{ borderRadius: 1, fontSize: '0.7rem', height: 20, bgcolor: '#FEF3E2', color: '#E67E22', alignSelf: 'flex-start' }} />
 );
 
 export function ProductList({ products, onDelete, onEdit, view = 'grid' }: Props) {
@@ -84,8 +84,8 @@ export function ProductList({ products, onDelete, onEdit, view = 'grid' }: Props
         <Grid key={p.id} size={{ xs: 12, sm: 6, md: 4 }}>
           <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
             <CardContent sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 0.75, p: 2.5 }}>
-              {p.category && <CategoryChip label={p.category} />}
               <Typography variant="h6" sx={{ fontSize: '1rem', lineHeight: 1.3 }}>{p.name}</Typography>
+              {p.category && <CategoryChip label={p.category} />}
               {p.description && (
                 <Typography
                   variant="body2"

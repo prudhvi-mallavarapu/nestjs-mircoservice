@@ -51,49 +51,44 @@ export class OrderService {
       items: items as OrderItem[],
     });
 
-    const saved = await this.orderRepo.save(order);
-    return this.enrichOrder(saved);
+    return this.orderRepo.save(order);
   }
 
-  async findAll() {
-    const orders = await this.orderRepo.find();
-    return orders.map((o) => this.enrichOrder(o));
+  findAll() {
+    return this.orderRepo.find();
   }
 
   async findOne(id: string) {
     const order = await this.orderRepo.findOne({ where: { id } });
     if (!order) throw new NotFoundException(`Order ${id} not found`);
-    return this.enrichOrder(order);
+    return order;
   }
 
   async update(id: string, dto: UpdateOrderDto): Promise<Order> {
+    const order = await this.orderRepo.findOne({ where: { id } });
+    if (!order) throw new NotFoundException(`Order ${id} not found`);
+    if (dto.status === OrderStatus.CANCELLED && order.status !== OrderStatus.CANCELLED) {
+      await Promise.all(
+        order.items.map((item) =>
+          firstValueFrom(this.productClient.send('release_stock', { id: item.productId, quantity: item.quantity }))
+            .catch(() => {}), // ponytail: best-effort; product may have been deleted already
+        ),
+      );
+    }
     await this.orderRepo.update(id, dto);
-    const updated = await this.orderRepo.findOne({ where: { id } });
-    if (!updated) throw new NotFoundException(`Order ${id} not found`);
-    return this.enrichOrder(updated);
+    return (await this.orderRepo.findOne({ where: { id } }))!;
   }
 
   async remove(id: string): Promise<void> {
     const order = await this.orderRepo.findOne({ where: { id } });
     if (!order) throw new NotFoundException(`Order ${id} not found`);
+    await this.orderRepo.delete(id);
+    // Release stock after successful delete; product may have been deleted already
     await Promise.all(
       order.items.map((item) =>
-        firstValueFrom(
-          this.productClient.send('release_stock', { id: item.productId, quantity: item.quantity }),
-        ).catch(() => {}), // ponytail: best-effort; product may have been deleted already
+        firstValueFrom(this.productClient.send('release_stock', { id: item.productId, quantity: item.quantity }))
+          .catch(() => {}),
       ),
     );
-    await this.orderRepo.delete(id);
-  }
-
-  private enrichOrder(order: Order) {
-    return {
-      ...order,
-      items: order.items.map((item) => ({
-        ...item,
-        productName: item.productName,
-        productCategory: item.productCategory,
-      })),
-    };
   }
 }

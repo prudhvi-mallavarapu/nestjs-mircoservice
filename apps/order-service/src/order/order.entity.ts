@@ -9,7 +9,6 @@ import {
 import { OrderItem } from './order-item.entity';
 
 export enum OrderStatus {
-  PENDING = 'PENDING',
   CONFIRMED = 'CONFIRMED',
   CANCELLED = 'CANCELLED',
 }

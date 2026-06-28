@@ -275,6 +275,5 @@ Unit tests cover `ProductService` (CRUD + reserveStock branches) and `OrderServi
 ## Known Limitations
 
 - **Partial order failure leaks stock** — during order creation, `reserve_stock` is called for each item sequentially. If a later item fails (insufficient stock), stock already decremented for earlier items in the same order is never restored.
-- **Cancelling an order does not restore stock** — `PATCH /orders/:id` with status `CANCELLED` does not emit a compensating event to product-service. Only `DELETE /orders/:id` restores stock.
 - **`synchronize: true` is development-only** — TypeORM auto-migrates the schema on startup. Replace with explicit migrations before any production deployment.
 - **CORS is wildcard-open** — `app.enableCors()` with no origin restriction is intentional for local development. Restrict before deploying.

@@ -63,7 +63,7 @@ describe('ProductService', () => {
       cb({ findOne: jest.fn().mockResolvedValue({ ...mockProduct, stock: 0 }), update: jest.fn() }),
     );
     const result = await service.reserveStock('uuid-1', 5);
-    expect(result).toEqual({ success: false, price: 0 });
+    expect(result).toEqual({ success: false, price: 0, name: '', category: null });
   });
 
   it('reserveStock decrements stock and returns price', async () => {
