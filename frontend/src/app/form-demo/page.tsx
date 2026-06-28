@@ -140,7 +140,17 @@ export default function FormDemoPage() {
           {submissions.length > 0 && (
             <>
               <Divider sx={{ my: 2 }} />
-              <Typography variant="h6" gutterBottom>Past Submissions</Typography>
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
+                <Typography variant="h6">Past Submissions</Typography>
+                <Button
+                  size="small"
+                  variant="outlined"
+                  color="error"
+                  onClick={() => { setSubmissions([]); localStorage.removeItem(STORAGE_KEY); }}
+                >
+                  Clear
+                </Button>
+              </Box>
               <List dense>
                 {submissions.map((sub, i) => (
                   <Paper key={i} sx={{ mb: 1 }}>
