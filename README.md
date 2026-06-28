@@ -51,7 +51,7 @@ The TCP layer exposes two message patterns consumed by order-service:
 | `reserve_stock` | `{ id, quantity }` | `{ success, price, name, category }` |
 | `release_stock` | `{ id, quantity }` | void |
 
-`reserve_stock` runs inside a single database transaction: reads current stock, checks sufficiency, decrements atomically, and returns the product name/category alongside the price so order-service can snapshot them. `release_stock` increments stock back (used when an order is deleted).
+`reserve_stock` runs inside a single database transaction: reads current stock, checks sufficiency, decrements atomically, and returns the product name/category alongside the price so order-service can snapshot them. `release_stock` increments stock back (used when an order is cancelled via PATCH or deleted via DELETE).
 
 ### Order Service
 
@@ -252,6 +252,9 @@ nestjs-microservice/
 │       │   ├── OrderForm.tsx
 │       │   ├── OrderList.tsx
 │       │   └── DynamicField.tsx              # Renders TEXT/LIST/RADIO
+│       ├── hooks/
+│       │   ├── useJsonConfig.ts               # Live JSON editor state + validation
+│       │   └── useSubmissions.ts              # localStorage submission history
 │       ├── lib/
 │       │   ├── api.ts                         # Fetch wrappers with retry
 │       │   └── formConfig.ts                  # JSON field definitions
@@ -269,11 +272,3 @@ pnpm test
 ```
 
 Unit tests cover `ProductService` (CRUD + reserveStock branches) and `OrderService` (create flow, TCP interaction).
-
----
-
-## Known Limitations
-
-- **Partial order failure leaks stock** — during order creation, `reserve_stock` is called for each item sequentially. If a later item fails (insufficient stock), stock already decremented for earlier items in the same order is never restored.
-- **`synchronize: true` is development-only** — TypeORM auto-migrates the schema on startup. Replace with explicit migrations before any production deployment.
-- **CORS is wildcard-open** — `app.enableCors()` with no origin restriction is intentional for local development. Restrict before deploying.
