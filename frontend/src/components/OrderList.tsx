@@ -2,7 +2,7 @@
 import {
   Accordion, AccordionSummary, AccordionDetails,
   Typography, Chip, Table, TableBody, TableCell,
-  TableHead, TableRow, IconButton, Stack,
+  TableHead, TableRow, IconButton, Stack, Box,
 } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -20,9 +20,10 @@ export function OrderList({ orders, onDelete }: { orders: Order[]; onDelete: (id
   return (
     <>
       {orders.map((order) => (
-        <Accordion key={order.id} disableGutters>
+        <Box key={order.id} sx={{ position: 'relative' }}>
+        <Accordion disableGutters>
           <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-            <Stack direction="row" spacing={2} sx={{ alignItems: 'center', width: '100%', pr: 1 }}>
+            <Stack direction="row" spacing={2} sx={{ alignItems: 'center', width: '100%', pr: 5 }}>
               <Typography variant="body2" color="text.secondary" sx={{ fontFamily: 'monospace' }}>
                 {order.id.slice(0, 8)}…
               </Typography>
@@ -34,13 +35,6 @@ export function OrderList({ orders, onDelete }: { orders: Order[]; onDelete: (id
               <Typography sx={{ ml: 'auto', fontWeight: 'bold' }}>
                 ${Number(order.totalAmount).toFixed(2)}
               </Typography>
-              <IconButton
-                size="small"
-                color="error"
-                onClick={(e) => { e.stopPropagation(); onDelete(order.id); }}
-              >
-                <DeleteIcon fontSize="small" />
-              </IconButton>
             </Stack>
           </AccordionSummary>
           <AccordionDetails>
@@ -68,6 +62,15 @@ export function OrderList({ orders, onDelete }: { orders: Order[]; onDelete: (id
             </Table>
           </AccordionDetails>
         </Accordion>
+        <IconButton
+          size="small"
+          color="error"
+          onClick={() => onDelete(order.id)}
+          sx={{ position: 'absolute', right: 40, top: 7 }}
+        >
+          <DeleteIcon fontSize="small" />
+        </IconButton>
+        </Box>
       ))}
     </>
   );

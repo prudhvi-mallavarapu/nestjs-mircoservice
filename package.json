@@ -6,8 +6,9 @@
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
-    "start:product": "nest start product-service --watch",
-    "start:order": "nest start order-service --watch",
+    "start:product": "PORT=5001 nest start product-service --watch",
+    "start:order": "PORT=5002 nest start order-service --watch",
+    "start:all": "PORT=5001 nest start product-service --watch & P1=$!; PORT=5002 nest start order-service --watch & P2=$!; trap 'kill $P1 $P2' EXIT; cd frontend && pnpm dev",
     "build:product": "nest build product-service",
     "build:order": "nest build order-service",
     "lint": "eslint \"{apps}/**/*.ts\" --fix",

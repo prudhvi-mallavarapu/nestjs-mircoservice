@@ -1,7 +1,7 @@
 import type { Product, Order } from '@/types';
 
-const PRODUCT_BASE = 'http://localhost:3001';
-const ORDER_BASE = 'http://localhost:3002';
+const PRODUCTS = '/api/products';
+const ORDERS = '/api/orders';
 
 async function request<T>(url: string, init?: RequestInit): Promise<T> {
   const res = await fetch(url, {
@@ -18,33 +18,21 @@ async function request<T>(url: string, init?: RequestInit): Promise<T> {
 
 export const api = {
   products: {
-    list: () => request<Product[]>(`${PRODUCT_BASE}/products`),
+    list: () => request<Product[]>(PRODUCTS),
     create: (data: Omit<Product, 'id' | 'createdAt' | 'updatedAt'>) =>
-      request<Product>(`${PRODUCT_BASE}/products`, {
-        method: 'POST',
-        body: JSON.stringify(data),
-      }),
+      request<Product>(PRODUCTS, { method: 'POST', body: JSON.stringify(data) }),
     update: (id: string, data: Partial<Omit<Product, 'id' | 'createdAt' | 'updatedAt'>>) =>
-      request<Product>(`${PRODUCT_BASE}/products/${id}`, {
-        method: 'PATCH',
-        body: JSON.stringify(data),
-      }),
+      request<Product>(`${PRODUCTS}/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
     remove: (id: string) =>
-      request<void>(`${PRODUCT_BASE}/products/${id}`, { method: 'DELETE' }),
+      request<void>(`${PRODUCTS}/${id}`, { method: 'DELETE' }),
   },
   orders: {
-    list: () => request<Order[]>(`${ORDER_BASE}/orders`),
+    list: () => request<Order[]>(ORDERS),
     create: (data: { items: { productId: string; quantity: number }[] }) =>
-      request<Order>(`${ORDER_BASE}/orders`, {
-        method: 'POST',
-        body: JSON.stringify(data),
-      }),
+      request<Order>(ORDERS, { method: 'POST', body: JSON.stringify(data) }),
     updateStatus: (id: string, status: Order['status']) =>
-      request<Order>(`${ORDER_BASE}/orders/${id}`, {
-        method: 'PATCH',
-        body: JSON.stringify({ status }),
-      }),
+      request<Order>(`${ORDERS}/${id}`, { method: 'PATCH', body: JSON.stringify({ status }) }),
     remove: (id: string) =>
-      request<void>(`${ORDER_BASE}/orders/${id}`, { method: 'DELETE' }),
+      request<void>(`${ORDERS}/${id}`, { method: 'DELETE' }),
   },
 };
