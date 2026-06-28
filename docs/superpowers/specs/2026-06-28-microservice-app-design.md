@@ -123,14 +123,16 @@ Order service sends to product service over TCP:
 | Pattern | Payload | Response |
 |---------|---------|----------|
 | `get_product` | `{ id: string }` | `Product` or `null` |
-| `validate_stock` | `{ id: string, quantity: number }` | `{ valid: boolean, price: number }` |
-| `decrement_stock` | `{ id: string, quantity: number }` | `{ success: boolean }` |
+| `reserve_stock` | `{ id: string, quantity: number }` | `{ success: boolean, price: number }` |
 
-**Order creation flow:**
-1. For each item, send `validate_stock` → get price + confirm stock available
-2. Create Order + OrderItems with snapshotted `unitPrice`
-3. For each item, send `decrement_stock` → reduce product stock
-4. Return created order
+**Why `reserve_stock` instead of separate validate + decrement:**  
+Merging both into one atomic DB transaction on the product service eliminates the race condition where two concurrent orders could both pass validation against the same stock level. Either the reservation succeeds (stock decremented, price returned) or it fails — no intermediate state.
+
+**Order creation flow (synchronous, no queues):**
+1. For each item, send `reserve_stock` → product service checks stock and decrements atomically in a single DB transaction → returns `{ success, price }`
+2. If any item returns `success: false` → reject the entire order with 400
+3. Create Order + OrderItems with snapshotted `unitPrice` from the response
+4. Return created order to client
 
 ---
 
