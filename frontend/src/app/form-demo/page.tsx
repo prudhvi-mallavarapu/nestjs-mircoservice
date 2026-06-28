@@ -1,5 +1,4 @@
 'use client';
-import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import {
   Container, Typography, Button, Stack, Alert,
@@ -8,78 +7,23 @@ import {
 } from '@mui/material';
 import { DynamicField } from '@/components/DynamicField';
 import { formConfig as initialConfig } from '@/lib/formConfig';
-import type { FieldConfig } from '@/types';
-
-const STORAGE_KEY = 'form_demo_submissions';
-
-function buildDefaults(fields: FieldConfig[]): Record<string, string> {
-  return Object.fromEntries(fields.map((f) => [String(f.id), f.defaultValue ?? '']));
-}
-
-function validateConfig(parsed: unknown): string | null {
-  if (!Array.isArray(parsed)) return 'Config must be a JSON array';
-  for (const item of parsed as Record<string, unknown>[]) {
-    if (item.id == null) return 'Each field must have an id';
-    if (!item.name) return 'Each field must have a name';
-    if (!['TEXT', 'LIST', 'RADIO'].includes(item.fieldType as string))
-      return 'fieldType must be TEXT, LIST, or RADIO';
-    if (['LIST', 'RADIO'].includes(item.fieldType as string) &&
-        (!Array.isArray(item.listOfValues) || (item.listOfValues as unknown[]).length === 0))
-      return `"${item.name}" requires listOfValues for ${item.fieldType} type`;
-    if (['LIST', 'RADIO'].includes(item.fieldType as string) &&
-        item.defaultValue != null &&
-        !(item.listOfValues as string[]).includes(item.defaultValue as string))
-      return `"${item.name}" defaultValue "${item.defaultValue}" is not in listOfValues`;
-  }
-  return null;
-}
+import { useJsonConfig, buildDefaults } from '@/hooks/useJsonConfig';
+import { useSubmissions } from '@/hooks/useSubmissions';
 
 export default function FormDemoPage() {
-  const [config, setConfig] = useState<FieldConfig[]>(initialConfig);
-  const [jsonText, setJsonText] = useState(() => JSON.stringify(initialConfig, null, 2));
-  const [jsonError, setJsonError] = useState<string | null>(null);
-  const [submissions, setSubmissions] = useState<Record<string, string>[]>([]);
-  const [submitted, setSubmitted] = useState(false);
-
   const { control, handleSubmit, reset } = useForm<Record<string, string>>({
     defaultValues: buildDefaults(initialConfig),
   });
 
-  useEffect(() => {
-    try {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      if (stored) setSubmissions(JSON.parse(stored));
-    } catch {
-      // corrupted localStorage — start fresh
-    }
-  }, []);
+  const { config, jsonText, jsonError, handleJsonChange, resetJson } = useJsonConfig(
+    (_next, defaults) => reset(defaults)
+  );
 
-  const handleJsonChange = (text: string) => {
-    setJsonText(text);
-    try {
-      const parsed = JSON.parse(text);
-      const err = validateConfig(parsed);
-      if (err) { setJsonError(err); return; }
-      const next = parsed as FieldConfig[];
-      setConfig((prev) => {
-        const sig = (fields: FieldConfig[]) =>
-          fields.map((f) => `${f.id}:${f.fieldType}:${f.defaultValue ?? ''}:${(f.listOfValues ?? []).join(',')}`).join('|');
-        if (sig(prev) !== sig(next)) reset(buildDefaults(next));
-        return next;
-      });
-      setJsonError(null);
-    } catch (e) {
-      setJsonError((e as Error).message);
-    }
-  };
+  const { submissions, submitted, saveSubmission, clearSubmissions } = useSubmissions();
 
   const onSubmit = (values: Record<string, string>) => {
-    const next = [values, ...submissions];
-    setSubmissions(next);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
-    setSubmitted(true);
+    saveSubmission(values);
     reset(buildDefaults(config));
-    setTimeout(() => setSubmitted(false), 3000);
   };
 
   return (
@@ -97,17 +41,7 @@ export default function FormDemoPage() {
               <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
                 JSON Config Editor
               </Typography>
-              <Button
-                size="small"
-                variant="outlined"
-                onClick={() => {
-                  const text = JSON.stringify(initialConfig, null, 2);
-                  setJsonText(text);
-                  setConfig(initialConfig);
-                  setJsonError(null);
-                  reset(buildDefaults(initialConfig));
-                }}
-              >
+              <Button size="small" variant="outlined" onClick={resetJson}>
                 Reset JSON
               </Button>
             </Box>
@@ -147,12 +81,7 @@ export default function FormDemoPage() {
               <Divider sx={{ my: 2 }} />
               <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
                 <Typography variant="h6">Past Submissions</Typography>
-                <Button
-                  size="small"
-                  variant="outlined"
-                  color="error"
-                  onClick={() => { setSubmissions([]); localStorage.removeItem(STORAGE_KEY); }}
-                >
+                <Button size="small" variant="outlined" color="error" onClick={clearSubmissions}>
                   Clear
                 </Button>
               </Box>
