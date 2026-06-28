@@ -31,7 +31,7 @@ export default function OrdersPage() {
   };
 
   return (
-    <Container maxWidth="md" sx={{ py: 4 }}>
+    <Container maxWidth="lg" sx={{ py: 4 }}>
       <Typography variant="h4" gutterBottom>Orders</Typography>
       {deleteError && <Alert severity="error" sx={{ mb: 2 }}>{deleteError}</Alert>}
       {loading ? (

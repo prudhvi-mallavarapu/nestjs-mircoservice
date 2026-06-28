@@ -1,16 +1,13 @@
 'use client';
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import {
-  Box,
-  Button,
-  TextField,
-  Typography,
-  Stack,
-  Alert,
+  Box, Button, TextField, Stack, Alert, Autocomplete,
 } from '@mui/material';
 import { useState } from 'react';
 import { api } from '@/lib/api';
 import type { Product } from '@/types';
+
+const CATEGORIES = ['Peripherals', 'Accessories', 'Workspace', 'Audio', 'Networking', 'Storage', 'Displays'];
 
 interface FormValues {
   name: string;
@@ -21,7 +18,7 @@ interface FormValues {
 }
 
 export function ProductForm({ onCreated }: { onCreated: (p: Product) => void }) {
-  const { register, handleSubmit, reset, formState: { errors } } = useForm<FormValues>();
+  const { register, handleSubmit, reset, control, formState: { errors } } = useForm<FormValues>();
   const [error, setError] = useState('');
 
   const onSubmit = async (values: FormValues) => {
@@ -40,10 +37,9 @@ export function ProductForm({ onCreated }: { onCreated: (p: Product) => void }) 
   };
 
   return (
-    <Box component="form" onSubmit={handleSubmit(onSubmit)} sx={{ mb: 4 }}>
-      <Typography variant="h6" gutterBottom>Add Product</Typography>
+    <Box component="form" onSubmit={handleSubmit(onSubmit)}>
       {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
-      <Stack spacing={2}>
+      <Stack spacing={2} sx={{ pt: 1 }}>
         <TextField label="Name" {...register('name', { required: 'Required' })}
           error={!!errors.name} helperText={errors.name?.message} />
         <TextField label="Description" {...register('description')} />
@@ -53,7 +49,19 @@ export function ProductForm({ onCreated }: { onCreated: (p: Product) => void }) 
         <TextField label="Stock" type="number" slotProps={{ htmlInput: { min: '0' } }}
           {...register('stock', { required: 'Required' })}
           error={!!errors.stock} helperText={errors.stock?.message} />
-        <TextField label="Category" {...register('category')} />
+        <Controller
+          name="category"
+          control={control}
+          render={({ field }) => (
+            <Autocomplete
+              options={CATEGORIES}
+              freeSolo
+              value={field.value ?? ''}
+              onChange={(_, v) => field.onChange(v ?? '')}
+              renderInput={(params) => <TextField {...params} label="Category" />}
+            />
+          )}
+        />
         <Button type="submit" variant="contained">Create Product</Button>
       </Stack>
     </Box>
