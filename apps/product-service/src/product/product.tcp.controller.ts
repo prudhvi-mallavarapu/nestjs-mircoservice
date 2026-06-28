@@ -15,4 +15,9 @@ export class ProductTcpController {
   reserveStock(@Payload() data: { id: string; quantity: number }) {
     return this.productService.reserveStock(data.id, data.quantity);
   }
+
+  @MessagePattern('release_stock')
+  releaseStock(@Payload() data: { id: string; quantity: number }) {
+    return this.productService.releaseStock(data.id, data.quantity);
+  }
 }

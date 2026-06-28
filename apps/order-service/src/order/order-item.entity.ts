@@ -1,6 +1,8 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
 import { Order } from './order.entity';
 
+const numTransformer = { to: (v: number) => v, from: (v: any) => Number(v) };
+
 @Entity()
 export class OrderItem {
   @PrimaryGeneratedColumn('uuid')
@@ -10,12 +12,18 @@ export class OrderItem {
   @JoinColumn()
   order: Order;
 
-  @Column('uuid')
+  @Column({ type: 'text' })
   productId: string;
+
+  @Column({ type: 'text', default: '' })
+  productName: string;
+
+  @Column({ type: 'text', nullable: true })
+  productCategory: string | null;
 
   @Column('int')
   quantity: number;
 
-  @Column('decimal', { precision: 10, scale: 2 }) // ponytail: better-sqlite3 returns string at runtime, cast with Number()
+  @Column('decimal', { precision: 10, scale: 2, transformer: numTransformer })
   unitPrice: number;
 }

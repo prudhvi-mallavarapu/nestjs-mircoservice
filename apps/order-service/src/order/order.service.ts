@@ -23,7 +23,7 @@ export class OrderService {
 
     for (const item of dto.items) {
       const reservation = await firstValueFrom(
-        this.productClient.send<{ success: boolean; price: number }>('reserve_stock', {
+        this.productClient.send<{ success: boolean; price: number; name: string; category: string | null }>('reserve_stock', {
           id: item.productId,
           quantity: item.quantity,
         }),
@@ -37,6 +37,8 @@ export class OrderService {
 
       items.push({
         productId: item.productId,
+        productName: reservation.name,
+        productCategory: reservation.category,
         quantity: item.quantity,
         unitPrice: reservation.price,
       });
@@ -55,7 +57,7 @@ export class OrderService {
 
   async findAll() {
     const orders = await this.orderRepo.find();
-    return Promise.all(orders.map((o) => this.enrichOrder(o)));
+    return orders.map((o) => this.enrichOrder(o));
   }
 
   async findOne(id: string) {
@@ -72,28 +74,26 @@ export class OrderService {
   }
 
   async remove(id: string): Promise<void> {
-    const result = await this.orderRepo.delete(id);
-    if (!result.affected) throw new NotFoundException(`Order ${id} not found`);
+    const order = await this.orderRepo.findOne({ where: { id } });
+    if (!order) throw new NotFoundException(`Order ${id} not found`);
+    await Promise.all(
+      order.items.map((item) =>
+        firstValueFrom(
+          this.productClient.send('release_stock', { id: item.productId, quantity: item.quantity }),
+        ).catch(() => {}), // ponytail: best-effort; product may have been deleted already
+      ),
+    );
+    await this.orderRepo.delete(id);
   }
 
-  private async enrichOrder(order: Order) {
-    const enrichedItems = await Promise.all(
-      order.items.map(async (item) => {
-        const product = await firstValueFrom(
-          this.productClient.send<{ name: string; category: string } | null>(
-            'get_product',
-            { id: item.productId },
-          ),
-        ).catch(() => null);
-
-        return {
-          ...item,
-          productName: product?.name ?? 'Unknown',
-          productCategory: product?.category ?? null,
-        };
-      }),
-    );
-
-    return { ...order, items: enrichedItems };
+  private enrichOrder(order: Order) {
+    return {
+      ...order,
+      items: order.items.map((item) => ({
+        ...item,
+        productName: item.productName,
+        productCategory: item.productCategory,
+      })),
+    };
   }
 }

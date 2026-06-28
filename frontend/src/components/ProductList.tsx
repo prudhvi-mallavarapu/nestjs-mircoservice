@@ -22,7 +22,7 @@ export function ProductList({ products, onDelete, view = 'grid' }: Props) {
     return (
       <Box sx={{ py: 10, textAlign: 'center', color: 'text.secondary' }}>
         <InventoryIcon sx={{ fontSize: 48, mb: 1, opacity: 0.3 }} />
-        <Typography>No products match your search.</Typography>
+        <Typography>No products found.</Typography>
       </Box>
     );
   }
@@ -44,7 +44,7 @@ export function ProductList({ products, onDelete, view = 'grid' }: Props) {
             {products.map((p) => (
               <TableRow key={p.id} hover sx={{ '&:last-child td': { border: 0 } }}>
                 <TableCell>
-                  <Typography variant="body2" fontWeight={600} sx={{ lineHeight: 1.3 }}>{p.name}</Typography>
+                  <Typography variant="body2" sx={{ fontWeight: 600, lineHeight: 1.3 }}>{p.name}</Typography>
                   {p.description && (
                     <Typography variant="caption" color="text.secondary" sx={{ display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 320 }}>
                       {p.description}

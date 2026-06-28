@@ -14,6 +14,8 @@ export enum OrderStatus {
   CANCELLED = 'CANCELLED',
 }
 
+const numTransformer = { to: (v: number) => v, from: (v: any) => Number(v) };
+
 @Entity()
 export class Order {
   @PrimaryGeneratedColumn('uuid')
@@ -22,7 +24,7 @@ export class Order {
   @Column({ type: 'simple-enum', enum: OrderStatus, default: OrderStatus.CONFIRMED })
   status: OrderStatus;
 
-  @Column('decimal', { precision: 10, scale: 2 }) // ponytail: better-sqlite3 returns string at runtime, cast with Number()
+  @Column('decimal', { precision: 10, scale: 2, transformer: numTransformer })
   totalAmount: number;
 
   @OneToMany(() => OrderItem, (item) => item.order, { cascade: true, eager: true })

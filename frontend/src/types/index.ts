@@ -20,7 +20,7 @@ export interface OrderItem {
 
 export interface Order {
   id: string;
-  status: 'PENDING' | 'CONFIRMED' | 'CANCELLED';
+  status: 'CONFIRMED' | 'CANCELLED';
   totalAmount: number;
   items: OrderItem[];
   createdAt: string;

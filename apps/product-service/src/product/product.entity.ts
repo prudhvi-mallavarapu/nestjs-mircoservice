@@ -6,24 +6,26 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 
+const numTransformer = { to: (v: number) => v, from: (v: any) => Number(v) };
+
 @Entity()
 export class Product {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column()
+  @Column({ type: 'text' })
   name: string;
 
-  @Column({ nullable: true })
+  @Column({ type: 'text', nullable: true })
   description?: string;
 
-  @Column('decimal', { precision: 10, scale: 2 }) // ponytail: better-sqlite3 returns string at runtime, cast with Number()
+  @Column('decimal', { precision: 10, scale: 2, transformer: numTransformer })
   price: number;
 
   @Column('int')
   stock: number;
 
-  @Column({ nullable: true })
+  @Column({ type: 'text', nullable: true })
   category?: string;
 
   @CreateDateColumn()

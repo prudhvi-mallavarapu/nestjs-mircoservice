@@ -10,7 +10,7 @@ const mockOrder: Order = {
   id: 'order-1',
   status: OrderStatus.CONFIRMED,
   totalAmount: 49.98,
-  items: [{ id: 'item-1', productId: 'prod-1', quantity: 2, unitPrice: 24.99, order: null as any }],
+  items: [{ id: 'item-1', productId: 'prod-1', productName: 'Widget', productCategory: null, quantity: 2, unitPrice: 24.99, order: null as any }],
   createdAt: new Date(),
   updatedAt: new Date(),
 };
@@ -52,8 +52,7 @@ describe('OrderService', () => {
 
   it('create saves order when reserve_stock succeeds', async () => {
     mockProductClient.send
-      .mockReturnValueOnce(of({ success: true, price: 24.99 })) // reserve_stock
-      .mockReturnValueOnce(of({ id: 'prod-1', name: 'Widget' })); // get_product for enrich
+      .mockReturnValueOnce(of({ success: true, price: 24.99, name: 'Widget', category: null }));
     const result = await service.create({ items: [{ productId: 'prod-1', quantity: 2 }] });
     expect(mockOrderRepo.save).toHaveBeenCalled();
     expect(result).toBeDefined();

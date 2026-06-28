@@ -1,14 +1,14 @@
 'use client';
 import { useForm, useFieldArray, Controller } from 'react-hook-form';
 import {
-  Box, Button, Typography, Stack, Alert,
+  Box, Button, Typography, Stack,
   IconButton, MenuItem, Select, InputLabel, FormControl, FormHelperText,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
 import DeleteOutlinedIcon from '@mui/icons-material/DeleteOutlined';
-import { useState } from 'react';
 import { api } from '@/lib/api';
+import { useToast } from '@/components/ToastProvider';
 import type { Order, Product } from '@/types';
 
 interface FormValues {
@@ -20,10 +20,9 @@ export function OrderForm({ products, onCreated }: { products: Product[]; onCrea
     defaultValues: { items: [{ productId: '', quantity: 1 }] },
   });
   const { fields, append, remove } = useFieldArray({ control, name: 'items' });
-  const [error, setError] = useState('');
+  const showToast = useToast();
 
   const onSubmit = async (values: FormValues) => {
-    setError('');
     try {
       const order = await api.orders.create({
         items: values.items.map((i) => ({ productId: i.productId, quantity: Number(i.quantity) })),
@@ -31,21 +30,19 @@ export function OrderForm({ products, onCreated }: { products: Product[]; onCrea
       onCreated(order);
       reset();
     } catch (e: any) {
-      setError(e.message);
+      showToast(e.message, 'error');
     }
   };
 
   return (
-    <Box component="form" onSubmit={handleSubmit(onSubmit)} sx={{ mb: 4 }}>
-      <Typography variant="h6" gutterBottom>Create Order</Typography>
-      {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+    <Box component="form" onSubmit={handleSubmit(onSubmit)} sx={{ pt: 1 }}>
       <Stack spacing={2}>
         {fields.map((field, idx) => (
           <Stack key={field.id} direction="row" spacing={1} sx={{ alignItems: 'flex-start' }}>
             <Controller
               name={`items.${idx}.productId`}
               control={control}
-              rules={{ required: 'Product required' }}
+              rules={{ required: 'Select a product' }}
               render={({ field: f, fieldState }) => (
                 <FormControl sx={{ minWidth: 220 }} size="small" error={!!fieldState.error}>
                   <InputLabel>Product</InputLabel>
@@ -68,9 +65,13 @@ export function OrderForm({ products, onCreated }: { products: Product[]; onCrea
             <Controller
               name={`items.${idx}.quantity`}
               control={control}
-              rules={{ required: true, min: 1 }}
+              rules={{
+                required: true,
+                min: { value: 1, message: 'At least 1' },
+                validate: (v) => Number.isInteger(Number(v)) || 'Whole number only',
+              }}
               render={({ field: f }) => (
-                <Stack direction="row" alignItems="center" sx={{ border: '1px solid rgba(0,0,0,0.23)', borderRadius: 1.5, overflow: 'hidden', height: 40, flexShrink: 0 }}>
+                <Stack direction="row" sx={{ alignItems: 'center', border: '1px solid rgba(0,0,0,0.23)', borderRadius: 1.5, overflow: 'hidden', height: 40, flexShrink: 0 }}>
                   <IconButton
                     size="small"
                     onClick={() => f.onChange(Math.max(1, Number(f.value) - 1))}

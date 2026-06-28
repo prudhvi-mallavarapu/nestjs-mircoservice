@@ -3,17 +3,28 @@ import type { Product, Order } from '@/types';
 const PRODUCTS = '/api/products';
 const ORDERS = '/api/orders';
 
-async function request<T>(url: string, init?: RequestInit): Promise<T> {
-  const res = await fetch(url, {
-    headers: { 'Content-Type': 'application/json' },
-    ...init,
-  });
-  if (!res.ok) {
-    const msg = await res.text().catch(() => res.statusText);
-    throw new Error(msg);
+const delay = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+async function request<T>(url: string, init?: RequestInit, attempt = 0): Promise<T> {
+  try {
+    const res = await fetch(url, {
+      headers: { 'Content-Type': 'application/json' },
+      ...init,
+    });
+    if (!res.ok) {
+      const msg = await res.text().catch(() => res.statusText);
+      throw new Error(msg);
+    }
+    if (res.status === 204) return undefined as T;
+    return res.json() as Promise<T>;
+  } catch (e: any) {
+    // Retry on network errors (backend not ready yet) — not on HTTP errors
+    if (attempt < 8 && e?.message === 'Failed to fetch') {
+      await delay(2000);
+      return request(url, init, attempt + 1);
+    }
+    throw e;
   }
-  if (res.status === 204) return undefined as T;
-  return res.json() as Promise<T>;
 }
 
 export const api = {

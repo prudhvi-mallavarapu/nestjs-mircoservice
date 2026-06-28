@@ -37,16 +37,20 @@ export class ProductService {
     if (!result.affected) throw new NotFoundException(`Product ${id} not found`);
   }
 
+  async releaseStock(id: string, quantity: number): Promise<void> {
+    await this.repo.increment({ id }, 'stock', quantity);
+  }
+
   // Atomic: check stock and decrement in one SQLite transaction.
   // SQLite serializes writes so no row-level lock needed.
-  async reserveStock(id: string, quantity: number): Promise<{ success: boolean; price: number }> {
+  async reserveStock(id: string, quantity: number): Promise<{ success: boolean; price: number; name: string; category: string | null }> {
     return this.dataSource.transaction(async (manager) => {
       const product = await manager.findOne(Product, { where: { id } });
       if (!product || product.stock < quantity) {
-        return { success: false, price: 0 };
+        return { success: false, price: 0, name: '', category: null };
       }
       await manager.update(Product, id, { stock: product.stock - quantity });
-      return { success: true, price: Number(product.price) };
+      return { success: true, price: product.price, name: product.name, category: product.category ?? null };
     });
   }
 }

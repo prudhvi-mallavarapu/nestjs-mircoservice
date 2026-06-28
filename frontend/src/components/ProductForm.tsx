@@ -1,10 +1,8 @@
 'use client';
 import { useForm, Controller } from 'react-hook-form';
-import {
-  Box, Button, TextField, Stack, Alert, Autocomplete,
-} from '@mui/material';
-import { useState } from 'react';
+import { Box, Button, TextField, Stack, Autocomplete } from '@mui/material';
 import { api } from '@/lib/api';
+import { useToast } from '@/components/ToastProvider';
 import type { Product } from '@/types';
 
 const CATEGORIES = ['Peripherals', 'Accessories', 'Workspace', 'Audio', 'Networking', 'Storage', 'Displays'];
@@ -19,10 +17,9 @@ interface FormValues {
 
 export function ProductForm({ onCreated }: { onCreated: (p: Product) => void }) {
   const { register, handleSubmit, reset, control, formState: { errors } } = useForm<FormValues>();
-  const [error, setError] = useState('');
+  const showToast = useToast();
 
   const onSubmit = async (values: FormValues) => {
-    setError('');
     try {
       const product = await api.products.create({
         ...values,
@@ -32,23 +29,48 @@ export function ProductForm({ onCreated }: { onCreated: (p: Product) => void }) 
       onCreated(product);
       reset();
     } catch (e: any) {
-      setError(e.message);
+      showToast(e.message, 'error');
     }
   };
 
   return (
     <Box component="form" onSubmit={handleSubmit(onSubmit)}>
-      {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
       <Stack spacing={2} sx={{ pt: 1 }}>
-        <TextField label="Name" {...register('name', { required: 'Required' })}
-          error={!!errors.name} helperText={errors.name?.message} />
-        <TextField label="Description" {...register('description')} />
-        <TextField label="Price" type="number" slotProps={{ htmlInput: { step: '0.01', min: '0' } }}
-          {...register('price', { required: 'Required' })}
-          error={!!errors.price} helperText={errors.price?.message} />
-        <TextField label="Stock" type="number" slotProps={{ htmlInput: { min: '0' } }}
-          {...register('stock', { required: 'Required' })}
-          error={!!errors.stock} helperText={errors.stock?.message} />
+        <TextField
+          label="Name"
+          required
+          {...register('name', { required: 'Name is required' })}
+          error={!!errors.name}
+          helperText={errors.name?.message}
+        />
+        <TextField label="Description (optional)" {...register('description')} />
+        <TextField
+          label="Price"
+          required
+          type="number"
+          slotProps={{ htmlInput: { step: '0.01', min: '0.01' } }}
+          {...register('price', {
+            required: 'Price is required',
+            min: { value: 0.01, message: 'Must be greater than 0' },
+            valueAsNumber: true,
+          })}
+          error={!!errors.price}
+          helperText={errors.price?.message}
+        />
+        <TextField
+          label="Stock"
+          required
+          type="number"
+          slotProps={{ htmlInput: { min: '0', step: '1' } }}
+          {...register('stock', {
+            required: 'Stock is required',
+            min: { value: 0, message: 'Must be 0 or more' },
+            validate: (v) => Number.isInteger(Number(v)) || 'Must be a whole number',
+            valueAsNumber: true,
+          })}
+          error={!!errors.stock}
+          helperText={errors.stock?.message}
+        />
         <Controller
           name="category"
           control={control}
@@ -58,7 +80,7 @@ export function ProductForm({ onCreated }: { onCreated: (p: Product) => void }) 
               freeSolo
               value={field.value ?? ''}
               onChange={(_, v) => field.onChange(v ?? '')}
-              renderInput={(params) => <TextField {...params} label="Category" />}
+              renderInput={(params) => <TextField {...params} label="Category (optional)" />}
             />
           )}
         />

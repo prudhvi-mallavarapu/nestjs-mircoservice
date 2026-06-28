@@ -1,11 +1,12 @@
 'use client';
 import { useEffect, useState, useMemo } from 'react';
 import {
-  Container, Typography, CircularProgress, Box, Alert,
+  Container, Typography, CircularProgress, Box,
   Button, Dialog, DialogTitle, DialogContent, DialogActions, IconButton,
   TextField, InputAdornment, Select, MenuItem, FormControl, InputLabel,
   ToggleButtonGroup, ToggleButton,
 } from '@mui/material';
+import { useToast } from '@/components/ToastProvider';
 import AddIcon from '@mui/icons-material/Add';
 import CloseIcon from '@mui/icons-material/Close';
 import SearchIcon from '@mui/icons-material/Search';
@@ -21,8 +22,8 @@ type SortKey = 'name_asc' | 'name_desc' | 'price_asc' | 'price_desc' | 'stock_as
 export default function ProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
-  const [deleteError, setDeleteError] = useState('');
   const [open, setOpen] = useState(false);
+  const showToast = useToast();
   const [confirmId, setConfirmId] = useState<string | null>(null);
   const [view, setView] = useState<'grid' | 'list'>('list');
   const [search, setSearch] = useState('');
@@ -61,16 +62,20 @@ export default function ProductsPage() {
     return sorted;
   }, [products, search, categoryFilter, sortBy]);
 
-  const handleCreated = (p: Product) => { setProducts((prev) => [p, ...prev]); setOpen(false); };
+  const handleCreated = (p: Product) => {
+    setProducts((prev) => [p, ...prev]);
+    setOpen(false);
+    showToast('Product added');
+  };
 
   const handleConfirmDelete = async () => {
     if (!confirmId) return;
-    setDeleteError('');
     try {
       await api.products.remove(confirmId);
       setProducts((prev) => prev.filter((p) => p.id !== confirmId));
+      showToast('Product deleted');
     } catch (e: any) {
-      setDeleteError(e.message ?? 'Failed to delete product');
+      showToast(e.message ?? 'Failed to delete product', 'error');
     } finally {
       setConfirmId(null);
     }
@@ -146,8 +151,6 @@ export default function ProductsPage() {
           </ToggleButton>
         </ToggleButtonGroup>
       </Box>
-
-      {deleteError && <Alert severity="error" sx={{ mb: 2 }}>{deleteError}</Alert>}
 
       {loading ? (
         <Box sx={{ display: 'flex', justifyContent: 'center', py: 10 }}>
