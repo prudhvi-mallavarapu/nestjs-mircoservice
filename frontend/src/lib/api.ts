@@ -12,7 +12,9 @@ async function request<T>(url: string, init?: RequestInit, attempt = 0): Promise
       ...init,
     });
     if (!res.ok) {
-      const msg = await res.text().catch(() => res.statusText);
+      const text = await res.text().catch(() => res.statusText);
+      let msg = text;
+      try { msg = JSON.parse(text)?.message ?? text; } catch {}
       throw new Error(msg);
     }
     if (res.status === 204) return undefined as T;

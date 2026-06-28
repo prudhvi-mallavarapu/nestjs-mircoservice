@@ -4,12 +4,14 @@ import {
   Table, TableBody, TableCell, TableHead, TableRow,
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
+import EditIcon from '@mui/icons-material/EditOutlined';
 import InventoryIcon from '@mui/icons-material/Inventory2Outlined';
 import type { Product } from '@/types';
 
 interface Props {
   products: Product[];
   onDelete: (id: string) => void;
+  onEdit: (p: Product) => void;
   view?: 'grid' | 'list';
 }
 
@@ -17,7 +19,7 @@ const CategoryChip = ({ label }: { label: string }) => (
   <Chip label={label} size="small" sx={{ borderRadius: 1, fontSize: '0.7rem', height: 20, bgcolor: '#FEF3E2', color: '#E67E22' }} />
 );
 
-export function ProductList({ products, onDelete, view = 'grid' }: Props) {
+export function ProductList({ products, onDelete, onEdit, view = 'grid' }: Props) {
   if (!products.length) {
     return (
       <Box sx={{ py: 10, textAlign: 'center', color: 'text.secondary' }}>
@@ -61,6 +63,9 @@ export function ProductList({ products, onDelete, view = 'grid' }: Props) {
                   <Typography variant="body2" color="text.secondary">{p.stock}</Typography>
                 </TableCell>
                 <TableCell align="right" sx={{ pr: 1 }}>
+                  <IconButton size="small" onClick={() => onEdit(p)} sx={{ opacity: 0.6, '&:hover': { opacity: 1 } }}>
+                    <EditIcon fontSize="small" />
+                  </IconButton>
                   <IconButton size="small" color="error" onClick={() => onDelete(p.id)} sx={{ opacity: 0.6, '&:hover': { opacity: 1 } }}>
                     <DeleteIcon fontSize="small" />
                   </IconButton>
@@ -99,9 +104,14 @@ export function ProductList({ products, onDelete, view = 'grid' }: Props) {
                     {p.stock} in stock
                   </Typography>
                 </Box>
-                <IconButton size="small" color="error" onClick={() => onDelete(p.id)} sx={{ opacity: 0.6, '&:hover': { opacity: 1 } }}>
-                  <DeleteIcon fontSize="small" />
-                </IconButton>
+                <Box sx={{ display: 'flex', gap: 0.5 }}>
+                  <IconButton size="small" onClick={() => onEdit(p)} sx={{ opacity: 0.6, '&:hover': { opacity: 1 } }}>
+                    <EditIcon fontSize="small" />
+                  </IconButton>
+                  <IconButton size="small" color="error" onClick={() => onDelete(p.id)} sx={{ opacity: 0.6, '&:hover': { opacity: 1 } }}>
+                    <DeleteIcon fontSize="small" />
+                  </IconButton>
+                </Box>
               </Box>
             </CardContent>
           </Card>

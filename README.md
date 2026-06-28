@@ -12,7 +12,7 @@ A full-stack microservice application built as an assignment. Two NestJS backend
 └───────────────────────┬─────────────────────────────────┘
                         │ HTTP
               ┌─────────▼──────────┐
-              │  Next.js Frontend  │  :3000
+              │  Next.js Frontend  │  :3003
               │  (MUI + RHF)       │
               └──────┬──────┬──────┘
                      │ HTTP │ HTTP
@@ -133,7 +133,7 @@ Starts product-service on `:5001` (TCP `:4001`) and order-service on `:5002`.
 pnpm start:frontend
 ```
 
-Open **http://localhost:3000**.
+Open **http://localhost:3003**.
 
 ### Individual service scripts
 

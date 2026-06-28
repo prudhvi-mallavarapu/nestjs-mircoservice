@@ -25,6 +25,7 @@ export default function ProductsPage() {
   const [open, setOpen] = useState(false);
   const showToast = useToast();
   const [confirmId, setConfirmId] = useState<string | null>(null);
+  const [editProduct, setEditProduct] = useState<Product | null>(null);
   const [view, setView] = useState<'grid' | 'list'>('list');
   const [search, setSearch] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('');
@@ -79,6 +80,12 @@ export default function ProductsPage() {
     } finally {
       setConfirmId(null);
     }
+  };
+
+  const handleUpdated = (p: Product) => {
+    setProducts((prev) => prev.map((x) => (x.id === p.id ? p : x)));
+    setEditProduct(null);
+    showToast('Product updated');
   };
 
   const confirmName = products.find((p) => p.id === confirmId)?.name;
@@ -157,7 +164,7 @@ export default function ProductsPage() {
           <CircularProgress />
         </Box>
       ) : (
-        <ProductList products={displayed} onDelete={setConfirmId} view={view} />
+        <ProductList products={displayed} onDelete={setConfirmId} onEdit={setEditProduct} view={view} />
       )}
 
       {/* Add product modal */}
@@ -170,6 +177,19 @@ export default function ProductsPage() {
         </DialogTitle>
         <DialogContent>
           <ProductForm onCreated={handleCreated} />
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit product dialog */}
+      <Dialog open={!!editProduct} onClose={() => setEditProduct(null)} maxWidth="sm" fullWidth>
+        <DialogTitle sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', pb: 0 }}>
+          Edit Product
+          <IconButton size="small" onClick={() => setEditProduct(null)}>
+            <CloseIcon fontSize="small" />
+          </IconButton>
+        </DialogTitle>
+        <DialogContent>
+          {editProduct && <ProductForm product={editProduct} onCreated={handleUpdated} />}
         </DialogContent>
       </Dialog>
 

@@ -15,19 +15,27 @@ interface FormValues {
   category: string;
 }
 
-export function ProductForm({ onCreated }: { onCreated: (p: Product) => void }) {
-  const { register, handleSubmit, reset, control, formState: { errors } } = useForm<FormValues>();
+interface Props {
+  onCreated: (p: Product) => void;
+  product?: Product;
+}
+
+export function ProductForm({ onCreated, product }: Props) {
+  const { register, handleSubmit, reset, control, formState: { errors } } = useForm<FormValues>({
+    defaultValues: product
+      ? { name: product.name, description: product.description ?? '', price: product.price, stock: product.stock, category: product.category ?? '' }
+      : undefined,
+  });
   const showToast = useToast();
 
   const onSubmit = async (values: FormValues) => {
     try {
-      const product = await api.products.create({
-        ...values,
-        price: Number(values.price),
-        stock: Number(values.stock),
-      });
-      onCreated(product);
-      reset();
+      const payload = { ...values, price: Number(values.price), stock: Number(values.stock) };
+      const result = product
+        ? await api.products.update(product.id, payload)
+        : await api.products.create(payload);
+      onCreated(result);
+      if (!product) reset();
     } catch (e: any) {
       showToast(e.message, 'error');
     }
@@ -84,7 +92,7 @@ export function ProductForm({ onCreated }: { onCreated: (p: Product) => void }) 
             />
           )}
         />
-        <Button type="submit" variant="contained">Create Product</Button>
+        <Button type="submit" variant="contained">{product ? 'Save Changes' : 'Create Product'}</Button>
       </Stack>
     </Box>
   );
