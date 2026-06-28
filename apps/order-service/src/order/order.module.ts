@@ -13,7 +13,10 @@ import { OrderController } from './order.controller';
       {
         name: 'PRODUCT_SERVICE',
         transport: Transport.TCP,
-        options: { host: 'localhost', port: 4001 },
+        options: {
+          host: process.env.PRODUCT_SERVICE_HOST ?? 'localhost',
+          port: parseInt(process.env.PRODUCT_SERVICE_PORT ?? '4001'),
+        },
       },
     ]),
   ],

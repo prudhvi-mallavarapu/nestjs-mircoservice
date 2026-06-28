@@ -65,15 +65,15 @@ export class OrderService {
   }
 
   async update(id: string, dto: UpdateOrderDto): Promise<Order> {
-    await this.findOne(id);
     await this.orderRepo.update(id, dto);
     const updated = await this.orderRepo.findOne({ where: { id } });
-    return this.enrichOrder(updated as Order);
+    if (!updated) throw new NotFoundException(`Order ${id} not found`);
+    return this.enrichOrder(updated);
   }
 
   async remove(id: string): Promise<void> {
-    await this.findOne(id);
-    await this.orderRepo.delete(id);
+    const result = await this.orderRepo.delete(id);
+    if (!result.affected) throw new NotFoundException(`Order ${id} not found`);
   }
 
   private async enrichOrder(order: Order) {
