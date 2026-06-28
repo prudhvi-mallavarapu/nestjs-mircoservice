@@ -23,6 +23,9 @@ function validateConfig(parsed: unknown): string | null {
     if (!item.name) return 'Each field must have a name';
     if (!['TEXT', 'LIST', 'RADIO'].includes(item.fieldType as string))
       return 'fieldType must be TEXT, LIST, or RADIO';
+    if (['LIST', 'RADIO'].includes(item.fieldType as string) &&
+        (!Array.isArray(item.listOfValues1) || (item.listOfValues1 as unknown[]).length === 0))
+      return `"${item.name}" requires listOfValues1 for ${item.fieldType} type`;
   }
   return null;
 }
@@ -85,9 +88,24 @@ export default function FormDemoPage() {
       <Grid container spacing={3}>
         <Grid size={{ xs: 12, md: 5 }}>
           <Paper sx={{ p: 2 }}>
-            <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }} gutterBottom>
-              JSON Config Editor
-            </Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
+              <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
+                JSON Config Editor
+              </Typography>
+              <Button
+                size="small"
+                variant="outlined"
+                onClick={() => {
+                  const text = JSON.stringify(initialConfig, null, 2);
+                  setJsonText(text);
+                  setConfig(initialConfig);
+                  setJsonError(null);
+                  reset(buildDefaults(initialConfig));
+                }}
+              >
+                Reset JSON
+              </Button>
+            </Box>
             <TextField
               multiline
               minRows={18}
